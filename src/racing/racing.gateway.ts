@@ -91,7 +91,6 @@ export class RacingGateway implements OnGatewayConnection, OnGatewayDisconnect {
   afterInit(server: Server) {
     this.io = server;
   }
-
   async handleConnection(socket: Socket) {
     console.log(`Player connected: ${socket.id}`);
     await this.loadRoomsFromDb();
@@ -181,6 +180,11 @@ export class RacingGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private broadcastRoomList() {
     const roomList = this.getPublicRoomList();
     this.io?.emit('roomListUpdated', { rooms: roomList });
+  }
+
+  @SubscribeMessage('ping_check')
+  handlePingCheck(client: Socket) {
+    client.emit('ping_response');
   }
 
   @SubscribeMessage('createRoom')
