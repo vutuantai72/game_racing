@@ -142,6 +142,7 @@ export class PlayerService {
     }
 
     player.playerInventory[key].pop();
+    player.markModified('playerInventory');
 
     await player.save();
     return player.playerInventory;
