@@ -26,6 +26,7 @@ interface PlayerData {
   speed: number;
   status: PlayerStatus;
   distance: number;
+  isLoaded: boolean;
 }
 
 interface CreateRoomDto {
@@ -56,6 +57,11 @@ interface RoomData {
 interface StartGameDto {
   roomID: string;
   map: number;
+}
+
+interface LoadingGameDto {
+  roomID: string;
+  playerID: string;
 }
 
 interface PlayerReadyDto {
@@ -151,6 +157,7 @@ export class RacingGateway implements OnGatewayConnection, OnGatewayDisconnect {
             status: p.status,
             ownerCars: p.ownerCars,
             distance: 0,
+            isLoaded: false,
           };
         }
       }
@@ -248,6 +255,7 @@ export class RacingGateway implements OnGatewayConnection, OnGatewayDisconnect {
         status: updatedPlayer.status,
         ownerCars: updatedPlayer.ownerCars,
         distance: 0,
+        isLoaded: false,
       };
 
       this.broadcastRoomList();
@@ -326,6 +334,7 @@ export class RacingGateway implements OnGatewayConnection, OnGatewayDisconnect {
       status: updatedPlayer.status,
       ownerCars: updatedPlayer.ownerCars,
       distance: 0,
+      isLoaded: false,
     };
 
     this.rooms[roomID].players[socket.id] = newPlayerData;
@@ -491,6 +500,55 @@ export class RacingGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } catch (error) {
       console.error('Error parsing kickPlayer data:', error);
       socket.emit('error', { message: 'Invalid data format' });
+    }
+  }
+
+  @SubscribeMessage('loadingGame')
+  loadingGame(
+    @MessageBody() rawData: string | LoadingGameDto,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    let data: LoadingGameDto;
+
+    try {
+      data =
+        typeof rawData === 'string'
+          ? (JSON.parse(rawData) as LoadingGameDto)
+          : rawData;
+    } catch (error) {
+      console.error('Error parsing loadingGame data:', error);
+      socket.emit('error', { message: 'Invalid data format' });
+      return;
+    }
+
+    const { roomID, playerID } = data;
+
+    if (!this.rooms[roomID]) {
+      socket.emit('error', { message: 'Room not found' });
+      return;
+    }
+
+    const playerLoaded = Object.values(this.rooms[roomID].players).find(
+      (player) => player.socketId === playerID,
+    );
+
+    if (!playerLoaded || socket.id !== playerLoaded.socketId) {
+      socket.emit('error', { message: 'Player not found' });
+      return;
+    }
+
+    playerLoaded.isLoaded = true;
+
+    const allPlayersLoaded = Object.values(this.rooms[roomID].players).every(
+      (player) => player.isLoaded === true,
+    );
+
+    if (allPlayersLoaded) {
+      this.io.to(roomID).emit('playerLoaded', {
+        roomID: roomID,
+      });
+
+      playerLoaded.isLoaded = false;
     }
   }
 
