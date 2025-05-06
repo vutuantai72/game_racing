@@ -5,6 +5,7 @@ import { RoomService } from '../services/room.service';
 import { RoomStatus } from '../schemas/room.schema';
 import { PlayerService } from 'src/services/player.service';
 import { PlayerCarEntry, PlayerStatus } from '../schemas/player.schema';
+import { getHttpServer } from '../utils/http-server.provider';
 
 // --- Interfaces (remain largely the same) ---
 
@@ -102,9 +103,10 @@ export class RacingGateway implements OnModuleInit {
 
   // Initialize the WebSocket server when the module starts
   async onModuleInit() {
-    const port = 3001;
-    this.server = new Server({ port });
-    console.log(`WebSocket server started on port ${port}`);
+    const httpServer = getHttpServer();
+    if (!httpServer) throw new Error('HTTP server not found');
+    this.server = new Server({ server: httpServer });
+    console.log(`WebSocket server started`);
 
     // Load existing rooms from DB on startup
     await this.loadRoomsFromDb();
