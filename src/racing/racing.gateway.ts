@@ -580,7 +580,7 @@ export class RacingGateway implements OnModuleInit {
     // Debounce or throttle this if it gets called too frequently in rapid succession
     console.log('Broadcasting updated room list...');
     const roomList = this.getPublicRoomList();
-    this.broadcastToAll('roomListUpdate', { rooms: roomList });
+    this.broadcastToAll('roomListUpdated', { rooms: roomList });
   }
 
   // --- Event Handlers (Refactored from @SubscribeMessage) ---
