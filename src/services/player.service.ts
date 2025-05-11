@@ -27,6 +27,14 @@ export class PlayerService {
     return player;
   }
 
+  async activateAllPlayers(): Promise<{ modifiedCount: number }> {
+    const result = await this.playerModel.updateMany(
+      {},
+      { $set: { isUsed: false } },
+    );
+    return { modifiedCount: result.modifiedCount };
+  }
+
   async getPlayerWithId(id: string): Promise<Player | null> {
     return await this.playerModel.findById(id).exec();
   }

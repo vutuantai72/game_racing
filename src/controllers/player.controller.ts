@@ -23,6 +23,11 @@ export class PlayerController {
     return { player };
   }
 
+  @Post('activate-all')
+  async activateAll() {
+    return this.playerService.activateAllPlayers();
+  }
+
   @Post(':id/records')
   async addRecord(
     @Param('id') playerId: string,
