@@ -736,7 +736,7 @@ export class RacingGateway implements OnModuleInit {
         return;
       }
 
-      const MAX_PLAYERS = 6;
+      const MAX_PLAYERS = 5;
       if (Object.keys(room.players).length >= MAX_PLAYERS) {
         this.sendError(socket, 'Room is full.');
         return;
