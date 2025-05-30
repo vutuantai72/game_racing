@@ -55,6 +55,10 @@ interface StartGameDto {
   map: number;
 }
 
+interface WaitingRoomDto {
+  roomID: string;
+}
+
 interface LoadingGameDto {
   roomID: string;
   playerID: string; // Use player _id for identification
@@ -247,6 +251,9 @@ export class RacingGateway implements OnModuleInit {
         break;
       case 'ping_check': // Handle ping
         this.sendToClient(socket, 'ping_response', {});
+        break;
+      case 'waitingRoom':
+        this.updateStatusWaitingRoom(socket, socketId, data as WaitingRoomDto);
         break;
       // Add other event handlers here
       default:
@@ -1301,6 +1308,59 @@ export class RacingGateway implements OnModuleInit {
       if (room && room.players[socketId]) {
         // Fetch original car ID maybe? Or just log inconsistency.
       }
+    }
+  }
+
+  async updateStatusWaitingRoom(
+    socket: WebSocket,
+    socketId: string,
+    data: WaitingRoomDto,
+  ) {
+    if (!data || typeof data.roomID !== 'string') {
+      this.sendError(
+        socket,
+        'Invalid data for waiting room. `roomID` are required.',
+      );
+      return;
+    }
+    const { roomID } = data;
+    console.log(`Attempting to status waiting room `);
+
+    try {
+      const room = this.rooms[roomID];
+
+      if (!room) {
+        this.sendError(socket, 'Room not found.');
+        return;
+      }
+
+      // Check if the requester is the host
+      const player = room.players[socketId];
+      if (!player || !player.isHost) {
+        this.sendError(socket, 'Only the host can change status in the game.');
+        return;
+      }
+
+      room.status = RoomStatus.WAITING;
+      await this.roomService.updateRoomStatus(roomID, RoomStatus.WAITING);
+      console.log(`Room ${roomID} status updated to WAITING.`);
+
+      this.broadcastToRoom(
+        roomID,
+        'updateWaitingRoom',
+        {
+          roomID: roomID,
+          status: room.status,
+        },
+        null,
+      );
+
+      this.broadcastRoomList();
+    } catch (error) {
+      console.error(
+        `Error starting game in room ${roomID} by host ${socketId}:`,
+        error,
+      );
     }
   }
 
