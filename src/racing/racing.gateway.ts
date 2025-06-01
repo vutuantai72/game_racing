@@ -1343,6 +1343,14 @@ export class RacingGateway implements OnModuleInit {
 
       room.status = RoomStatus.WAITING;
       await this.roomService.updateRoomStatus(roomID, RoomStatus.WAITING);
+
+      for (const p of Object.values(room.players)) {
+        if (!p.isHost) {
+          p.status = PlayerStatus.Waiting;
+          await this.playerService.updatePlayerStatus(p._id, p.status);
+        }
+      }
+
       console.log(`Room ${roomID} status updated to WAITING.`);
 
       this.broadcastToRoom(
