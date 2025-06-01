@@ -1363,6 +1363,13 @@ export class RacingGateway implements OnModuleInit {
         null,
       );
 
+      this.broadcastToRoom(
+        roomID,
+        'updatePlayers',
+        { players: Object.values(room.players) },
+        null,
+      );
+
       this.broadcastRoomList();
     } catch (error) {
       console.error(
