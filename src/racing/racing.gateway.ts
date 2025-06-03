@@ -373,7 +373,7 @@ export class RacingGateway implements OnModuleInit {
         this.broadcastToRoom(
           roomIDToUpdate,
           'playerLeft',
-          { socketId: socketId, playerId: disconnectedPlayerId },
+          { socketID: socketId, playerId: disconnectedPlayerId },
           null,
         ); // Notify about the specific player leaving
       }
@@ -1066,7 +1066,7 @@ export class RacingGateway implements OnModuleInit {
       this.broadcastToRoom(
         roomID,
         'playerKicked',
-        { socketId: targetSocketID, playerId: targetPlayerId },
+        { socketID: targetSocketID, playerId: targetPlayerId },
         null,
       );
 
