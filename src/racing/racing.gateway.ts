@@ -948,7 +948,7 @@ export class RacingGateway implements OnModuleInit {
           this.broadcastToRoom(
             roomIDToLeave,
             'playerLeft',
-            { socketId: socketId, playerId: playerId },
+            { socketID: socketId, playerId: playerId },
             null,
           );
           console.log(
